@@ -121,8 +121,7 @@ public class SimpleQuerydslR2dbcFragment<T> implements QuerydslR2dbcFragment<T> 
     }
 
     private void applyConverterToSubQuery(QueryMetadata queryMetadata) {
-        if (queryMetadata.getProjection() instanceof ConstructorExpression) {
-            ConstructorExpression<?> projection = (ConstructorExpression<?>) queryMetadata.getProjection();
+        if (queryMetadata.getProjection() instanceof ConstructorExpression<?> projection) {
             for (Expression<?> arg : projection.getArgs()) {
                 if (arg instanceof SQLQuery) {
                     applyConverter(((SQLQuery<?>) arg).getMetadata());
@@ -130,8 +129,7 @@ public class SimpleQuerydslR2dbcFragment<T> implements QuerydslR2dbcFragment<T> 
             }
         }
 
-        if (queryMetadata.getWhere() instanceof PredicateOperation) {
-            PredicateOperation where = (PredicateOperation) queryMetadata.getWhere();
+        if (queryMetadata.getWhere() instanceof PredicateOperation where) {
             for (Expression<?> arg : where.getArgs()) {
                 if (arg instanceof SQLQuery) {
                     applyConverter(((SQLQuery<?>) arg).getMetadata());
@@ -139,8 +137,7 @@ public class SimpleQuerydslR2dbcFragment<T> implements QuerydslR2dbcFragment<T> 
             }
         }
 
-        if (queryMetadata.getHaving() instanceof PredicateOperation) {
-            PredicateOperation having = (PredicateOperation) queryMetadata.getHaving();
+        if (queryMetadata.getHaving() instanceof PredicateOperation having) {
             for (Expression<?> arg : having.getArgs()) {
                 if (arg instanceof SQLQuery) {
                     applyConverter(((SQLQuery<?>) arg).getMetadata());
@@ -150,9 +147,9 @@ public class SimpleQuerydslR2dbcFragment<T> implements QuerydslR2dbcFragment<T> 
     }
 
     private void applyConverterToWhere(QueryMetadata queryMetadata) {
-        if (queryMetadata.getWhere() instanceof Predicate) {
-            Predicate where = (Predicate) queryMetadata.getWhere();
-            Predicate convertedWhere = doApplyConverter(where);
+        if (queryMetadata.getWhere() != null) {
+            Predicate where = queryMetadata.getWhere();
+            Predicate convertedWhere = (Predicate) doApplyConverter(where);
             queryMetadata.clearWhere();
             queryMetadata.addWhere(convertedWhere);
         }
