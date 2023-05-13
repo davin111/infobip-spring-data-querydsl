@@ -24,6 +24,7 @@ import com.querydsl.core.types.PathImpl;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.PredicateOperation;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.SimpleOperation;
 import com.querydsl.sql.RelationalPath;
 import com.querydsl.sql.SQLBindings;
 import com.querydsl.sql.SQLQuery;
@@ -120,29 +121,27 @@ public class SimpleQuerydslR2dbcFragment<T> implements QuerydslR2dbcFragment<T> 
         applyConverterToWhere(queryMetadata);
     }
 
+    private void checkExpression(Expression<?> expression) {
+        if (expression instanceof SQLQuery<?>) {
+            applyConverter(((SQLQuery<?>) expression).getMetadata());
+        } else if (expression instanceof SimpleOperation<?>) {
+            for (Expression<?> arg : ((SimpleOperation<?>) expression).getArgs()) {
+                checkExpression(arg);
+            }
+        }
+    }
+
     private void applyConverterToSubQuery(QueryMetadata queryMetadata) {
         if (queryMetadata.getProjection() instanceof ConstructorExpression<?> projection) {
-            for (Expression<?> arg : projection.getArgs()) {
-                if (arg instanceof SQLQuery) {
-                    applyConverter(((SQLQuery<?>) arg).getMetadata());
-                }
-            }
+            for (Expression<?> arg : projection.getArgs()) checkExpression(arg);
         }
 
         if (queryMetadata.getWhere() instanceof PredicateOperation where) {
-            for (Expression<?> arg : where.getArgs()) {
-                if (arg instanceof SQLQuery) {
-                    applyConverter(((SQLQuery<?>) arg).getMetadata());
-                }
-            }
+            for (Expression<?> arg : where.getArgs()) checkExpression(arg);
         }
 
         if (queryMetadata.getHaving() instanceof PredicateOperation having) {
-            for (Expression<?> arg : having.getArgs()) {
-                if (arg instanceof SQLQuery) {
-                    applyConverter(((SQLQuery<?>) arg).getMetadata());
-                }
-            }
+            for (Expression<?> arg : having.getArgs()) checkExpression(arg);
         }
     }
 
